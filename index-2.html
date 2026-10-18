@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#253c2d">
+<title>해병 작명소</title>
+<style>
+:root{--bg:#101711;--panel:#1b281e;--panel2:#243629;--green:#b7d18a;--cream:#f4f1df;--muted:#b9c4b6;--red:#b84132;--border:#435a43}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#263b2a 0%,var(--bg) 58%);color:var(--cream);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px}
+main{width:min(720px,100%)}.topline{display:flex;align-items:center;gap:10px;color:var(--green);font-weight:800;letter-spacing:.12em;font-size:.8rem}.seal{width:42px;height:42px;border:2px solid var(--green);border-radius:50%;display:grid;place-items:center;font-size:1.35rem}
+h1{font-size:clamp(2.4rem,8vw,4.7rem);line-height:1.03;margin:18px 0 10px;letter-spacing:-.06em}.sub{color:var(--muted);line-height:1.65;margin:0 0 26px}
+.panel{background:linear-gradient(145deg,rgba(36,54,41,.97),rgba(23,34,25,.98));border:1px solid var(--border);border-radius:22px;padding:clamp(18px,4vw,30px);box-shadow:0 20px 70px #0005}
+label{display:block;font-weight:750;margin-bottom:9px}.inputrow{display:flex;gap:10px}.inputrow input{flex:1;min-width:0}
+input{width:100%;background:#111a13;border:1px solid #526751;color:var(--cream);border-radius:12px;padding:15px 14px;font:inherit;outline:none}input:focus{border-color:var(--green);box-shadow:0 0 0 3px #b7d18a22}
+button{border:0;border-radius:12px;padding:14px 17px;font:inherit;font-weight:800;cursor:pointer;transition:transform .12s,filter .12s}button:hover{filter:brightness(1.08)}button:active{transform:scale(.98)}.primary{background:var(--green);color:#1a281b}.secondary{background:#344b37;color:var(--cream);border:1px solid #59735a}.inputrow .secondary{white-space:nowrap}
+.actions{display:flex;gap:10px;margin-top:14px}.actions button{flex:1}
+.result{display:none;margin-top:22px;border:1px dashed #8ca477;background:#101a12;border-radius:16px;padding:20px;text-align:center}.result.show{display:block}.stamp{display:inline-block;border:2px solid var(--red);color:#ef8274;padding:4px 10px;transform:rotate(-3deg);font-size:.75rem;font-weight:900;letter-spacing:.12em;margin-bottom:12px}.result h2{font-size:clamp(1.8rem,6vw,3rem);margin:0 0 12px;color:var(--green);overflow-wrap:anywhere}.quote{line-height:1.7;color:#e2e6d7;margin:0 auto;max-width:520px}.result-actions{display:flex;gap:10px;margin-top:18px}.result-actions button{flex:1}
+.note{font-size:.8rem;color:var(--muted);line-height:1.6;margin:18px 3px 0}.footer{text-align:center;color:#839181;font-size:.75rem;margin-top:20px}
+@media(max-width:480px){body{padding:14px}.inputrow{flex-direction:column}.actions,.result-actions{flex-direction:column}.panel{border-radius:17px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="topline"><div class="seal" aria-hidden="true">⚓</div><span>MARINE CORPS · NAMING OFFICE</span></div>
+  <h1>해병 작명소</h1>
+  <p class="sub">악! 칭호를 붙이는 시대는 끝났다!<br>해병문학 인물들의 이름 어감을 참고해 이름 자체를 개조한다!</p>
+  <section class="panel" aria-label="작명 도구">
+    <label for="name">작명할 이름</label>
+    <div class="inputrow">
+      <input id="name" maxlength="20" placeholder="예: 김철수" autocomplete="off">
+      <button class="secondary" id="randomInput" type="button">🎲 랜덤 이름</button>
+    </div>
+    <div class="actions">
+      <button class="primary" id="make" type="button">⚓ 해병식 작명 실시!</button>
+      <button class="secondary" id="clear" type="button">초기화</button>
+    </div>
+    <div class="result" id="result" aria-live="polite">
+      <div class="stamp">작명 완료 · 승인</div>
+      <h2 id="resultName"></h2>
+      <p class="quote" id="resultText"></p>
+      <div class="result-actions">
+        <button class="primary" id="copy" type="button">📋 결과 복사</button>
+        <button class="secondary" id="again" type="button">🔁 다른 이름 뽑기</button>
+      </div>
+    </div>
+    <p class="note">※ 황근출·무모칠·톤톤정 등 해병문학 인물 이름의 음절 조합과 어감을 참고한 패러디입니다. 특정 인물 이름을 그대로 붙이기보다 입력한 이름을 변형합니다. 입력값은 서버로 전송되지 않습니다.</p>
+  </section>
+  <div class="footer">악! 이름 자체를 해병식으로 개조한다!</div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const samples = ["김철수","박영희","이민수","최강민","정다은","한지우","오태식","윤서준","장원석","홍길동"];
+const surnames = ["황","무","톤","박","김","최","문","강","오","조","백","독","맹","방","손","주"];
+const endings = ["근출","모칠","톤정","말년","기합","춘식","철곤","용팔","대갈","칠성","봉구","성윤","두팔","찬호","만식","종철"];
+const quotes = [
+  "악! {name}! 이름 세 글자에 기합이 넘쳐흐른다! 라이라이 차차차!",
+  "이름 개조 완료! {name}! 이제부터 작명소의 정식 해병문학풍 이름이다!",
+  "아쎄이 {name}! 음절 하나하나에 해병의 혼이 깃들었다! 악!",
+  "황근출 해병님도 고개를 끄덕일 이름이다! {name}! 필승!"
+];
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function cleanName(value){return value.trim().replace(/[<>]/g,"").replace(/\s+/g,"").slice(0,20)}
+function createName(raw){
+ const input=cleanName(raw); if(!input)return null;
+ const chars=Array.from(input);
+ const first=chars[0] || pick(surnames);
+ const last=chars[chars.length-1] || "수";
+ const middle=chars.length>1?chars[1]:"철";
+ const patterns=[
+   () => pick(surnames)+pick(endings),
+   () => first+pick(["근","모","톤","말","기","철","용","칠"])+pick(["출","칠","정","년","곤","팔","식"]),
+   () => pick(surnames)+middle+pick(["출","칠","정","년","곤","팔","식"]),
+   () => pick(surnames)+pick(["근출","모칠","톤정","말년","춘식","철곤"]).slice(0,2)+last,
+   () => first+pick(["근출","모칠","톤정","말년","춘식","철곤"]).slice(1),
+   () => pick(surnames)+last+pick(["룡","칠","정","곤","출"])
+ ];
+ let generated=pick(patterns)();
+ if(generated.replace(/\s/g,"")===input) generated=pick(surnames)+pick(endings);
+ return {generated,quote:pick(quotes).replaceAll("{name}",generated)};
+}
+let current="";
+function show(raw){
+ const result=createName(raw);
+ if(!result){$('name').focus();$('name').setCustomValidity('이름을 먼저 입력해 주세요.');$('name').reportValidity();$('name').setCustomValidity('');return}
+ current=`해병 작명소 결과\n입력한 이름: ${cleanName(raw)}\n해병문학풍 이름: ${result.generated}\n${result.quote}`;
+ $('resultName').textContent=result.generated;$('resultText').textContent=result.quote;$('result').classList.add('show');
+}
+$('make').addEventListener('click',()=>show($('name').value));
+$('name').addEventListener('keydown',e=>{if(e.key==='Enter')show($('name').value)});
+$('randomInput').addEventListener('click',()=>{$('name').value=pick(samples);show($('name').value)});
+$('again').addEventListener('click',()=>show($('name').value||pick(samples)));
+$('clear').addEventListener('click',()=>{$('name').value='';$('result').classList.remove('show');current='';$('name').focus()});
+$('copy').addEventListener('click',async()=>{
+ try{await navigator.clipboard.writeText(current);$('copy').textContent='✅ 복사 완료!';}
+ catch(e){const area=document.createElement('textarea');area.value=current;document.body.appendChild(area);area.select();const ok=document.execCommand('copy');area.remove();$('copy').textContent=ok?'✅ 복사 완료!':'복사 실패';}
+ setTimeout(()=>$('copy').textContent='📋 결과 복사',1500);
+});
+</script>
+</body>
+</html>
